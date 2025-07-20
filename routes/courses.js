@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Progress = require('../models/Progress');
 const { auth, adminAuth } = require('../middleware/auth');
 const { validateCourse } = require('../middleware/validation');
-
+const mongoose = require('mongoose');
 const router = express.Router();
 
 
@@ -47,7 +47,10 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Course not found' });
     }
 
-    const isEnrolled = course.enrolledStudents.includes(req.user.id);
+    const isEnrolled = course.enrolledStudents
+      .map(id => id.toString())
+      .includes(req.user.id);
+
     const isAdmin = req.user.role === 'admin';
 
     if (!isEnrolled && !isAdmin) {
@@ -59,6 +62,7 @@ router.get('/:id', auth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 router.post('/', adminAuth, validateCourse, async (req, res) => {
