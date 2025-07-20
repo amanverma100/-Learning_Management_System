@@ -5,10 +5,15 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  options: [{
-    text: String,
-    isCorrect: Boolean
-  }]
+  options: {
+    type: [String],
+    required: true,
+    validate: [arr => arr.length > 0, 'At least one option is required']
+  },
+  correctOption: {
+    type: Number,
+    required: true
+  }
 });
 
 const quizSchema = new mongoose.Schema({
@@ -22,7 +27,11 @@ const quizSchema = new mongoose.Schema({
     ref: 'Course',
     required: true
   },
-  questions: [questionSchema]
+  questions: {
+    type: [questionSchema],
+    required: true,
+    validate: [arr => arr.length > 0, 'At least one question is required']
+  }
 }, {
   timestamps: true
 });
