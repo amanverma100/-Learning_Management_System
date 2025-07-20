@@ -33,8 +33,11 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id', auth, async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid course ID' });
+  }
 
-router.get('/:id', async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
       .populate('lessons', 'title videoUrl resourceLinks order')
@@ -42,6 +45,13 @@ router.get('/:id', async (req, res) => {
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const isEnrolled = course.enrolledStudents.includes(req.user.id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isEnrolled && !isAdmin) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     res.json(course);
